@@ -3,16 +3,15 @@ local partNames = {
     "RidgeAngler", "RidgeFroger", "RidgePinkie", "RidgeChainsmoker", "RidgeBlitz"
 }
 
-local specialModel = "WallDweller" -- WallDweller special case (Model with capital "D")
+local specialModel = "WallDweller"
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 
--- Function to create a BillboardGui above the part showing the distance
 local function createDistanceLabelForPart(part)
     local billboardGui = Instance.new("BillboardGui")
     billboardGui.Adornee = part
     billboardGui.Size = UDim2.new(0, 100, 0, 50)
-    billboardGui.StudsOffset = Vector3.new(0, 3, 0) -- Position above the part
+    billboardGui.StudsOffset = Vector3.new(0, 3, 0)
     billboardGui.AlwaysOnTop = true
 
     local textLabel = Instance.new("TextLabel")
@@ -23,7 +22,6 @@ local function createDistanceLabelForPart(part)
     textLabel.Parent = billboardGui
     billboardGui.Parent = part
 
-    -- Update the text with the distance to the part
     game:GetService("RunService").RenderStepped:Connect(function()
         if character and part and part:IsDescendantOf(workspace) then
             local distance = (part.Position - character.HumanoidRootPart.Position).Magnitude
@@ -32,14 +30,13 @@ local function createDistanceLabelForPart(part)
     end)
 end
 
--- Function to create a BillboardGui above the model's primary part showing the distance
 local function createDistanceLabelForModel(model)
     if model.PrimaryPart then
         local primaryPart = model.PrimaryPart
         local billboardGui = Instance.new("BillboardGui")
         billboardGui.Adornee = primaryPart
         billboardGui.Size = UDim2.new(0, 100, 0, 50)
-        billboardGui.StudsOffset = Vector3.new(0, 3, 0) -- Position above the primary part
+        billboardGui.StudsOffset = Vector3.new(0, 3, 0)
         billboardGui.AlwaysOnTop = true
 
         local textLabel = Instance.new("TextLabel")
@@ -50,7 +47,6 @@ local function createDistanceLabelForModel(model)
         textLabel.Parent = billboardGui
         billboardGui.Parent = primaryPart
 
-        -- Update the text with the distance to the model's primary part
         game:GetService("RunService").RenderStepped:Connect(function()
             if character and primaryPart and primaryPart:IsDescendantOf(workspace) then
                 local distance = (primaryPart.Position - character.HumanoidRootPart.Position).Magnitude
@@ -76,20 +72,16 @@ local function notifyPartDespawned(partName)
     })
 end
 
--- Function to handle when a part or model is added
 local function onChildAdded(child)
     if table.find(partNames, child.Name) and child:IsA("Part") then
-        -- Handle parts from the list
         notifyPartAppeared(child.Name)
         createDistanceLabelForPart(child)
     elseif child:IsA("Model") and child.Name == specialModel and child.Parent == workspace.Monsters then
-        -- Handle the WallDweller model
         notifyPartAppeared(child.Name)
         createDistanceLabelForModel(child)
     end
 end
 
--- Function to handle when a part or model is removed
 local function onChildRemoved(child)
     if table.find(partNames, child.Name) and child:IsA("Part") then
         notifyPartDespawned(child.Name)
@@ -98,17 +90,14 @@ local function onChildRemoved(child)
     end
 end
 
--- Connect to the workspace for both ChildAdded and ChildRemoved events
 workspace.ChildAdded:Connect(onChildAdded)
 workspace.ChildRemoved:Connect(onChildRemoved)
 
--- Connect to the Monsters folder for the special WallDweller model
 if workspace:FindFirstChild("Monsters") then
     workspace.Monsters.ChildAdded:Connect(onChildAdded)
     workspace.Monsters.ChildRemoved:Connect(onChildRemoved)
 end
 
--- Check for existing parts and models when the script runs
 for _, child in ipairs(workspace:GetChildren()) do
     if table.find(partNames, child.Name) and child:IsA("Part") then
         onChildAdded(child)
